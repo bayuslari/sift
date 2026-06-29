@@ -20,13 +20,48 @@ interface GeminiResponse {
   candidates?: { content?: { parts?: { text?: string }[] } }[];
 }
 
-async function callGemini(apiKey: string, prompt: string): Promise<string> {
+/** Forces valid JSON and steadier scores; mirrors the shape in buildScoringPrompt. */
+const SCORING_GENERATION_CONFIG = {
+  responseMimeType: 'application/json',
+  responseSchema: {
+    type: 'object',
+    properties: {
+      score: { type: 'integer' },
+      reason: { type: 'string' },
+      redFlags: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            label: { type: 'string' },
+            severity: { type: 'string', enum: ['low', 'high'] },
+          },
+        },
+      },
+      greenFlags: {
+        type: 'array',
+        items: { type: 'object', properties: { label: { type: 'string' } } },
+      },
+    },
+    required: ['score', 'reason'],
+  },
+  temperature: 0.2,
+};
+
+async function callGemini(
+  apiKey: string,
+  prompt: string,
+  generationConfig?: Record<string, unknown>,
+): Promise<string> {
   let res: Response;
   try {
     res = await fetch(ENDPOINT(apiKey), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        ...(generationConfig ? { generationConfig } : {}),
+      }),
     });
   } catch (e) {
     throw new LlmError(`Network error calling Gemini: ${(e as Error).message}`);
@@ -66,7 +101,7 @@ export async function scoreWithGemini(
   rules: Rules,
   apiKey: string,
 ): Promise<Partial<ScoredJob>> {
-  const text = await callGemini(apiKey, buildScoringPrompt(job, profile, rules));
+  const text = await callGemini(apiKey, buildScoringPrompt(job, profile, rules), SCORING_GENERATION_CONFIG);
   const raw = parseJson<RawScore>(text);
   const score = clamp(Number(raw.score));
   const verdict = score >= rules.goodThreshold ? 'GOOD' : score >= rules.maybeThreshold ? 'MAYBE' : 'SKIP';

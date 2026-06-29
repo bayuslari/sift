@@ -16,7 +16,7 @@ export function Field({
     <label className="flex flex-col gap-1.5">
       <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">{label}</span>
       {children}
-      {help && !error && <span className="text-[11px] text-zinc-500">{help}</span>}
+      {help && !error && <span className="text-[11px] text-zinc-400">{help}</span>}
       {error && <span className="text-[11px] text-amber-300">{error}</span>}
     </label>
   );
@@ -173,7 +173,7 @@ export function ToggleRow({
     <div className="flex items-center justify-between gap-3">
       <div className="flex flex-col">
         <span className="text-sm text-zinc-200">{label}</span>
-        {help && <span className="text-[11px] text-zinc-500">{help}</span>}
+        {help && <span className="text-[11px] text-zinc-400">{help}</span>}
       </div>
       <Switch checked={checked} onChange={onChange} />
     </div>

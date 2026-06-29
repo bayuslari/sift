@@ -5,11 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Single desaturated accent — emerald. No purple, no neon.
+        // Brand accent — electric cyan. Emerald is reserved for positive "green-flag" signals.
         accent: {
-          DEFAULT: '#34d399', // emerald-400
-          fill: '#10b981', // emerald-500
-          dim: '#065f46', // emerald-800
+          DEFAULT: '#22d3ee', // cyan-400
+          fill: '#06b6d4', // cyan-500
+          dim: '#155e75', // cyan-800
         },
       },
       fontFamily: {

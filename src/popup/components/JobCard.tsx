@@ -10,7 +10,7 @@ const VERDICT_STYLE: Record<Verdict, string> = {
 function VerdictChip({ verdict }: { verdict: Verdict }) {
   return (
     <span
-      className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wider ${VERDICT_STYLE[verdict]}`}
+      className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-semibold tracking-wider ${VERDICT_STYLE[verdict]}`}
     >
       {verdict}
     </span>
@@ -24,7 +24,7 @@ function ScoreBar({ score }: { score: number }) {
         {Array.from({ length: 10 }, (_, i) => (
           <span
             key={i}
-            className={`h-1.5 w-2 rounded-[1px] ${i < score ? 'bg-accent' : 'bg-zinc-800'}`}
+            className={`h-2 w-2.5 rounded-[1px] ${i < score ? 'bg-accent' : 'bg-zinc-800'}`}
           />
         ))}
       </div>
@@ -57,19 +57,19 @@ export function JobCard({ job, onDraft }: { job: ScoredJob; onDraft: (job: Score
         <ScoreBar score={job.score} />
       </div>
 
-      <p className="mt-2 text-xs leading-relaxed text-zinc-400">{job.reason}</p>
+      <p className="mt-2 text-[13px] leading-relaxed text-zinc-300">{job.reason}</p>
 
       {(job.redFlags.length > 0 || job.greenFlags.length > 0) && (
         <ul className="mt-2 space-y-1">
           {job.redFlags.map((f, i) => (
-            <li key={`r${i}`} className="flex items-start gap-1.5 text-[11px] text-amber-300/90">
+            <li key={`r${i}`} className="flex items-start gap-1.5 text-xs text-amber-300">
               <Flag weight="fill" size={12} className="mt-0.5 shrink-0 text-amber-400" />
               <span>{f.label}</span>
             </li>
           ))}
           {job.greenFlags.map((f, i) => (
-            <li key={`g${i}`} className="flex items-start gap-1.5 text-[11px] text-emerald-300/90">
-              <Check weight="bold" size={12} className="mt-0.5 shrink-0 text-accent" />
+            <li key={`g${i}`} className="flex items-start gap-1.5 text-xs text-emerald-300">
+              <Check weight="bold" size={12} className="mt-0.5 shrink-0 text-emerald-400" />
               <span>{f.label}</span>
             </li>
           ))}
@@ -77,7 +77,7 @@ export function JobCard({ job, onDraft }: { job: ScoredJob; onDraft: (job: Score
       )}
 
       <div className="mt-2.5 flex items-center gap-3">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-600">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
           {job.platform}
         </span>
         {job.verdict === 'GOOD' && (

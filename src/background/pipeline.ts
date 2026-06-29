@@ -20,6 +20,19 @@ export interface PipelineResult {
   llmError: boolean;
 }
 
+/** Concatenate two flag lists, deterministic first, de-duped by lowercased label. */
+function unionFlags<T extends { label: string }>(base: T[], extra: T[]): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const f of [...base, ...extra]) {
+    const key = f.label.trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(f);
+  }
+  return out;
+}
+
 export async function processJobs(jobs: Job[], deps: PipelineDeps): Promise<PipelineResult> {
   const [profile, rules, apiKey, history] = await Promise.all([
     deps.getProfile(),
@@ -43,7 +56,14 @@ export async function processJobs(jobs: Job[], deps: PipelineDeps): Promise<Pipe
     if (apiKey && base.score >= rules.maybeThreshold - 1) {
       try {
         const enriched = await gemini(job, profile, rules, apiKey);
-        result = { ...base, ...enriched };
+        // Keep the LLM's score/verdict/reason, but never drop the deterministic
+        // Upwork signals (high competition, low client spend, unmet quals).
+        result = {
+          ...base,
+          ...enriched,
+          redFlags: unionFlags(base.redFlags, enriched.redFlags ?? []),
+          greenFlags: unionFlags(base.greenFlags, enriched.greenFlags ?? []),
+        };
       } catch (e) {
         if (e instanceof LlmError) llmError = true;
         result = base; // graceful fallback to deterministic rules
