@@ -15,8 +15,8 @@ describe('postedAgo', () => {
     expect(postedAgo(iso(5 * 3_600_000))).toBe('5h ago');
   });
 
-  it('formats day buckets with explicit "yesterday"', () => {
-    expect(postedAgo(iso(86_400_000))).toBe('yesterday');
+  it('formats day buckets consistently as "Nd ago"', () => {
+    expect(postedAgo(iso(86_400_000))).toBe('1d ago');
     expect(postedAgo(iso(3 * 86_400_000))).toBe('3d ago');
     expect(postedAgo(iso(14 * 86_400_000))).toBe('2w ago');
   });
