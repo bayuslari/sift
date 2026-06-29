@@ -18,6 +18,7 @@ export const demoMatches: ScoredJob[] = [
     title: 'Senior Next.js Engineer for fintech dashboard (React + TypeScript)',
     description: '',
     url: '#',
+    postedAt: new Date(Date.now() - 2 * 3_600_000).toISOString(), // 2h ago
     tags: ['Next.js', 'React', 'fintech'],
     score: 9,
     verdict: 'GOOD',
@@ -36,6 +37,7 @@ export const demoMatches: ScoredJob[] = [
     title: 'Productionize Insurance Verification App (Laravel / PHP backend)',
     description: '',
     url: '#',
+    postedAt: new Date(Date.now() - 86_400_000).toISOString(), // yesterday
     tags: ['Laravel', 'PHP', 'insurance'],
     score: 5,
     verdict: 'MAYBE',
@@ -55,6 +57,7 @@ export const demoMatches: ScoredJob[] = [
     title: 'Frontend Engineer — React, Tailwind, Shopify headless (EU remote)',
     description: '',
     url: '#',
+    postedAt: new Date(Date.now() - 4 * 86_400_000).toISOString(), // 4d ago
     tags: ['React', 'Tailwind CSS', 'e-commerce'],
     score: 8,
     verdict: 'GOOD',

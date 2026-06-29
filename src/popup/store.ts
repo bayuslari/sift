@@ -4,14 +4,19 @@ import { type ScanStats, defaultStats } from '../shared/messages';
 import { send, onStorageChanged, hasChrome } from './api';
 
 type Tab = 'matches' | 'settings';
+type Sort = 'best' | 'newest';
 
 interface PopupState {
   matches: ScoredJob[];
   history: ScoredJob[];
   stats: ScanStats;
   tab: Tab;
+  sort: Sort;
+  goodOnly: boolean;
   hydrated: boolean;
   setTab: (tab: Tab) => void;
+  setSort: (sort: Sort) => void;
+  setGoodOnly: (goodOnly: boolean) => void;
   hydrate: () => Promise<void>;
   toggle: () => Promise<void>;
 }
@@ -21,9 +26,13 @@ export const usePopupStore = create<PopupState>((set, get) => ({
   history: [],
   stats: defaultStats(),
   tab: 'matches',
+  sort: 'best',
+  goodOnly: true,
   hydrated: false,
 
   setTab: (tab) => set({ tab }),
+  setSort: (sort) => set({ sort }),
+  setGoodOnly: (goodOnly) => set({ goodOnly }),
 
   hydrate: async () => {
     // Dev-only: outside the extension, show sample data for visual work.
