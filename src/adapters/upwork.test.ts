@@ -22,6 +22,9 @@ describe('upworkAdapter', () => {
     expect(jobs.length).toBe(2);
     const [first] = jobs;
     expect(first.title).toMatch(/Full-Stack/);
+    // "Posted 5 hours ago" -> recent ISO timestamp
+    expect(first.postedAt).toBeDefined();
+    expect(Date.now() - Date.parse(first.postedAt!)).toBeGreaterThan(0);
     expect(first.url).toMatch(/^https:\/\/www\.upwork\.com\/jobs\//);
     expect(first.platform).toBe('upwork');
     expect(first.tags).toContain('React');
@@ -63,6 +66,19 @@ describe('upworkAdapter', () => {
     expect(second.budget).toBe(60); // "Fixed-price: $60.00"
     expect(second.clientSpend).toBe(300);
     expect(second.proposalsMin).toBe(50);
+    expect(first.postedAt).toBeDefined(); // "Posted 3 hours ago"
+  });
+
+  it('parses the Most Recent feed tab with posted dates', () => {
+    const recent = load('upwork-recent.html');
+    const jobs = upworkAdapter.parse(recent);
+    expect(jobs.length).toBe(2);
+    const [first] = jobs;
+    expect(first.title).toMatch(/React \+ TypeScript dashboard/);
+    expect(first.tags).toContain('TypeScript');
+    expect(first.postedAt).toBeDefined(); // "Posted 12 minutes ago"
+    // Newer than the best-match feed's "3 hours ago" tile.
+    expect(Date.now() - Date.parse(first.postedAt!)).toBeLessThan(60 * 60 * 1000);
   });
 
   it('parses detail-page qualifications and activity signals', () => {

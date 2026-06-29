@@ -1,5 +1,6 @@
 import { Flag, Check, ArrowUpRight, PencilSimpleLine } from '@phosphor-icons/react';
 import type { ScoredJob, Verdict } from '../../core/types';
+import { postedAgo } from '../format';
 
 const VERDICT_STYLE: Record<Verdict, string> = {
   GOOD: 'bg-accent/15 text-accent',
@@ -34,6 +35,7 @@ function ScoreBar({ score }: { score: number }) {
 }
 
 export function JobCard({ job, onDraft }: { job: ScoredJob; onDraft: (job: ScoredJob) => void }) {
+  const posted = postedAgo(job.postedAt);
   return (
     <div className="px-4 py-3">
       <div className="flex items-start justify-between gap-2">
@@ -76,10 +78,13 @@ export function JobCard({ job, onDraft }: { job: ScoredJob; onDraft: (job: Score
         </ul>
       )}
 
-      <div className="mt-2.5 flex items-center gap-3">
+      <div className="mt-2.5 flex items-center gap-2">
         <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
           {job.platform}
         </span>
+        {posted && (
+          <span className="font-mono text-[10px] tracking-wider text-zinc-500">· {posted}</span>
+        )}
         {job.verdict === 'GOOD' && (
           <button
             type="button"
