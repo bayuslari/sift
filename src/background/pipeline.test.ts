@@ -71,6 +71,25 @@ describe('processJobs', () => {
     expect(res.newMatches[0].reason).toBe('gemini said good');
   });
 
+  it('keeps deterministic red flags after a successful Gemini pass', async () => {
+    const scoreGemini = vi.fn(async () => ({
+      score: 8,
+      verdict: 'GOOD' as const,
+      reason: 'gemini said good',
+      redFlags: [],
+      greenFlags: [],
+      scoredBy: 'gemini' as const,
+      scoredAt: '',
+    }));
+    const { deps, saved } = makeDeps({ getApiKey: async () => 'KEY', scoreGemini });
+    await processJobs(
+      [job('b', 'React app for fintech', { proposalsMin: 20, proposalsMax: 50 })],
+      deps,
+    );
+    expect(saved[0][0].scoredBy).toBe('gemini');
+    expect(saved[0][0].redFlags.some((f) => /competition/i.test(f.label))).toBe(true);
+  });
+
   it('falls back to rules and flags llmError on LlmError', async () => {
     const scoreGemini = vi.fn(async () => {
       throw new LlmError('bad key', 400);

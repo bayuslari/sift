@@ -12,7 +12,7 @@ const StatusDot = memo(function StatusDot({ on }: { on: boolean }) {
       )}
       <span
         className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
-          on ? 'bg-accent' : 'bg-zinc-600'
+          on ? 'bg-accent shadow-[0_0_8px_theme(colors.accent.DEFAULT)]' : 'bg-zinc-600'
         }`}
       />
     </span>
@@ -42,7 +42,7 @@ function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="px-4 py-2.5">
-      <div className="text-[10px] uppercase tracking-wider text-zinc-500">{label}</div>
+      <div className="text-[11px] uppercase tracking-wider text-zinc-400">{label}</div>
       <div className="mt-0.5 font-mono text-sm text-zinc-100">{value}</div>
     </div>
   );
