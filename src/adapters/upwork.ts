@@ -1,5 +1,5 @@
 import type { Job, Qualification, QualKind } from '../core/types';
-import { type SiteAdapter, registerAdapter, stableId, text, parseMoney } from './adapter';
+import { type SiteAdapter, registerAdapter, stableId, text, parseMoney, parseRelativeDate } from './adapter';
 
 const BASE = 'https://www.upwork.com';
 
@@ -37,6 +37,13 @@ function collectTiles(root: ParentNode): Element[] {
     if (card && !tiles.includes(card)) tiles.push(card);
   }
   return tiles;
+}
+
+/** Read a "Posted X ago" date from a tile/page: prefer the data-test node, fall back to text. */
+function readPostedAt(scope: Element | ParentNode): string | undefined {
+  const el = scope.querySelector('[data-test="posted-on"], [data-test="job-pubilshed-date"]');
+  const raw = text(el) || ((scope as HTMLElement).textContent ?? '').match(/posted\s+[^.<\n]{1,24}?(?:ago|yesterday|today)/i)?.[0];
+  return parseRelativeDate(raw ?? undefined);
 }
 
 function parseList(root: ParentNode): Job[] {
@@ -79,6 +86,7 @@ function parseList(root: ParentNode): Job[] {
       title: text(link),
       description,
       url,
+      postedAt: readPostedAt(tile),
       budget,
       budgetRaw: jobType,
       clientSpend,
@@ -173,6 +181,7 @@ function parseDetail(root: ParentNode): Job[] {
       title,
       description,
       url,
+      postedAt: readPostedAt(root),
       clientSpend,
       tags,
       qualifications: parseQualifications(root),

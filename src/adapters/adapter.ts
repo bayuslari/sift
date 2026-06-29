@@ -37,3 +37,31 @@ export function parseMoney(raw: string | undefined): number | undefined {
   const n = parseFloat(m[1]);
   return m[2] ? n * 1000 : n;
 }
+
+const UNIT_MS: Record<string, number> = {
+  second: 1000,
+  minute: 60_000,
+  hour: 3_600_000,
+  day: 86_400_000,
+  week: 604_800_000,
+  month: 2_592_000_000, // ~30d
+  year: 31_536_000_000,
+};
+
+/**
+ * Convert a relative date string ("Posted 5 hours ago", "yesterday", "3 days ago",
+ * "just now", "last week") to an absolute ISO timestamp, computed from now. Returns
+ * undefined when nothing recognizable is found. Used for `Job.postedAt`.
+ */
+export function parseRelativeDate(raw: string | undefined, now: number = Date.now()): string | undefined {
+  if (!raw) return undefined;
+  const s = raw.toLowerCase().replace(/^posted\s+/, '').trim();
+  if (/just now|moments? ago|^today\b|^a few seconds/.test(s)) return new Date(now).toISOString();
+  if (/yesterday/.test(s)) return new Date(now - UNIT_MS.day).toISOString();
+  const m = s.match(/(?:(\d+)|a|an|last)\s*(second|minute|hour|day|week|month|year)s?/);
+  if (!m) return undefined;
+  const qty = m[1] ? parseInt(m[1], 10) : 1;
+  const unit = UNIT_MS[m[2]];
+  if (!unit || !Number.isFinite(qty)) return undefined;
+  return new Date(now - qty * unit).toISOString();
+}
