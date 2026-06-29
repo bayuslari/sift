@@ -23,6 +23,23 @@ describe('parseRelativeDate', () => {
     expect(ago('last week')).toBe(604_800_000);
   });
 
+  it('handles "Posted yesterday" / "Posted today" (no separator)', () => {
+    expect(ago('Posted yesterday')).toBe(86_400_000);
+    expect(parseRelativeDate('Posted today', NOW)).toBe(new Date(NOW).toISOString());
+  });
+
+  it('handles abbreviated units (min / hr)', () => {
+    expect(ago('5 min ago')).toBe(5 * 60_000);
+    expect(ago('2 hr ago')).toBe(2 * 3_600_000);
+  });
+
+  it('falls back to absolute dates and rejects the future', () => {
+    expect(parseRelativeDate('Posted on Jun 5, 2025', NOW)).toBe(
+      new Date(Date.parse('Jun 5, 2025')).toISOString(),
+    );
+    expect(parseRelativeDate('Posted on Jun 5, 2099', NOW)).toBeUndefined();
+  });
+
   it('returns undefined for unrecognized or empty input', () => {
     expect(parseRelativeDate(undefined)).toBeUndefined();
     expect(parseRelativeDate('whenever')).toBeUndefined();

@@ -83,7 +83,12 @@ export function JobCard({ job, onDraft }: { job: ScoredJob; onDraft: (job: Score
           {job.platform}
         </span>
         {posted && (
-          <span className="font-mono text-[10px] tracking-wider text-zinc-500">· {posted}</span>
+          <span
+            title={job.postedAt ? new Date(job.postedAt).toLocaleString() : undefined}
+            className="font-mono text-[10px] tracking-wider text-zinc-500"
+          >
+            · {posted}
+          </span>
         )}
         {job.verdict === 'GOOD' && (
           <button

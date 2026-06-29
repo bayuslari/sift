@@ -71,6 +71,24 @@ describe('processJobs', () => {
     expect(res.newMatches[0].reason).toBe('gemini said good');
   });
 
+  it('backfills postedAt onto a known history job from a fresh scrape', async () => {
+    const existing: ScoredJob = {
+      ...job('a', 'Laravel API'), // no postedAt
+      score: 8,
+      verdict: 'GOOD',
+      reason: '',
+      redFlags: [],
+      greenFlags: [],
+      scoredBy: 'rules',
+      scoredAt: '',
+    };
+    const { deps, saved } = makeDeps({ getHistory: async () => [existing] });
+    const postedAt = new Date(Date.now() - 3_600_000).toISOString();
+    await processJobs([job('a', 'Laravel API', { postedAt })], deps);
+    const patched = saved[0].find((j) => j.id === 'a');
+    expect(patched?.postedAt).toBe(postedAt);
+  });
+
   it('keeps deterministic red flags after a successful Gemini pass', async () => {
     const scoreGemini = vi.fn(async () => ({
       score: 8,

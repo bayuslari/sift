@@ -53,15 +53,32 @@ const UNIT_MS: Record<string, number> = {
  * "just now", "last week") to an absolute ISO timestamp, computed from now. Returns
  * undefined when nothing recognizable is found. Used for `Job.postedAt`.
  */
+const UNIT_ALIAS: Record<string, keyof typeof UNIT_MS> = {
+  sec: 'second',
+  second: 'second',
+  min: 'minute',
+  minute: 'minute',
+  hr: 'hour',
+  hour: 'hour',
+  day: 'day',
+  week: 'week',
+  month: 'month',
+  year: 'year',
+};
+
 export function parseRelativeDate(raw: string | undefined, now: number = Date.now()): string | undefined {
   if (!raw) return undefined;
-  const s = raw.toLowerCase().replace(/^posted\s+/, '').trim();
+  const s = raw.toLowerCase().replace(/^posted\s+(?:on\s+)?/, '').trim();
   if (/just now|moments? ago|^today\b|^a few seconds/.test(s)) return new Date(now).toISOString();
   if (/yesterday/.test(s)) return new Date(now - UNIT_MS.day).toISOString();
-  const m = s.match(/(?:(\d+)|a|an|last)\s*(second|minute|hour|day|week|month|year)s?/);
-  if (!m) return undefined;
-  const qty = m[1] ? parseInt(m[1], 10) : 1;
-  const unit = UNIT_MS[m[2]];
-  if (!unit || !Number.isFinite(qty)) return undefined;
-  return new Date(now - qty * unit).toISOString();
+  const m = s.match(/(?:(\d+)|a|an|last)\s*(sec|second|min|minute|hr|hour|day|week|month|year)s?/);
+  if (m) {
+    const qty = m[1] ? parseInt(m[1], 10) : 1;
+    const unit = UNIT_MS[UNIT_ALIAS[m[2]]];
+    if (unit && Number.isFinite(qty)) return new Date(now - qty * unit).toISOString();
+  }
+  // Absolute date fallback ("Jun 5, 2025", "January 5, 2025"). Reject future dates.
+  const abs = Date.parse(s);
+  if (!Number.isNaN(abs) && abs <= now) return new Date(abs).toISOString();
+  return undefined;
 }

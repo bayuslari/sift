@@ -39,10 +39,14 @@ function collectTiles(root: ParentNode): Element[] {
   return tiles;
 }
 
-/** Read a "Posted X ago" date from a tile/page: prefer the data-test node, fall back to text. */
+// Relative ("5 hours ago", "yesterday", "last week") or absolute ("Posted on Jun 5, 2025").
+const POSTED_RE =
+  /\d+\s*(?:sec|second|min|minute|hr|hour|day|week|month|year)s?\s+ago|a\s+(?:day|week|month|year)\s+ago|just now|yesterday|today|last\s+(?:week|month|year)|posted\s+on\s+[a-z]+\s+\d{1,2},?\s*\d{4}/i;
+
+/** Read a posted date from a tile/page: prefer the data-test node, fall back to tile text. */
 function readPostedAt(scope: Element | ParentNode): string | undefined {
   const el = scope.querySelector('[data-test="posted-on"], [data-test="job-pubilshed-date"]');
-  const raw = text(el) || ((scope as HTMLElement).textContent ?? '').match(/posted\s+[^.<\n]{1,24}?(?:ago|yesterday|today)/i)?.[0];
+  const raw = text(el) || ((scope as HTMLElement).textContent ?? '').match(POSTED_RE)?.[0];
   return parseRelativeDate(raw ?? undefined);
 }
 

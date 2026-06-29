@@ -79,6 +79,11 @@ describe('upworkAdapter', () => {
     expect(first.postedAt).toBeDefined(); // "Posted 12 minutes ago"
     // Newer than the best-match feed's "3 hours ago" tile.
     expect(Date.now() - Date.parse(first.postedAt!)).toBeLessThan(60 * 60 * 1000);
+    // Second tile uses plain-text "Posted yesterday" with no data-test node (fallback path).
+    const [, second] = jobs;
+    expect(second.postedAt).toBeDefined();
+    const dayMs = 24 * 60 * 60 * 1000;
+    expect(Date.now() - Date.parse(second.postedAt!)).toBeGreaterThan(dayMs - 60_000);
   });
 
   it('parses detail-page qualifications and activity signals', () => {

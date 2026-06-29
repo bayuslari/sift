@@ -22,7 +22,6 @@ export function postedAgo(iso: string | undefined): string | null {
   const h = Math.round(m / 60);
   if (h < 24) return `${h}h ago`;
   const d = Math.round(h / 24);
-  if (d === 1) return 'yesterday';
   if (d < 7) return `${d}d ago`;
   const w = Math.round(d / 7);
   if (w < 5) return `${w}w ago`;
