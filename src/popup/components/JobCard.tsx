@@ -1,6 +1,6 @@
-import { Flag, Check, ArrowUpRight, PencilSimpleLine } from '@phosphor-icons/react';
+import { Flag, Check, ArrowUpRight, PencilSimpleLine, CurrencyDollar, Users } from '@phosphor-icons/react';
 import type { ScoredJob, Verdict } from '../../core/types';
-import { postedAgo } from '../format';
+import { postedAgo, formatBudget, formatProposals } from '../format';
 
 const VERDICT_STYLE: Record<Verdict, string> = {
   GOOD: 'bg-accent/15 text-accent',
@@ -36,6 +36,8 @@ function ScoreBar({ score }: { score: number }) {
 
 export function JobCard({ job, onDraft }: { job: ScoredJob; onDraft: (job: ScoredJob) => void }) {
   const posted = postedAgo(job.postedAt);
+  const budget = formatBudget(job);
+  const proposals = formatProposals(job);
   return (
     <div className="px-4 py-3">
       <div className="flex items-start justify-between gap-2">
@@ -78,7 +80,7 @@ export function JobCard({ job, onDraft }: { job: ScoredJob; onDraft: (job: Score
         </ul>
       )}
 
-      <div className="mt-2.5 flex items-center gap-2">
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
           {job.platform}
         </span>
@@ -88,6 +90,18 @@ export function JobCard({ job, onDraft }: { job: ScoredJob; onDraft: (job: Score
             className="font-mono text-[10px] tracking-wider text-zinc-500"
           >
             · {posted}
+          </span>
+        )}
+        {budget && (
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] tracking-wider text-zinc-500">
+            <CurrencyDollar size={11} weight="bold" className="shrink-0" />
+            {budget}
+          </span>
+        )}
+        {proposals && (
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] tracking-wider text-zinc-500">
+            <Users size={11} weight="bold" className="shrink-0" />
+            {proposals}
           </span>
         )}
         {job.verdict === 'GOOD' && (

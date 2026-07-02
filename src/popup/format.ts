@@ -10,6 +10,43 @@ export function relativeTime(ts: number | null): string {
   return `${Math.round(h / 24)}d ago`;
 }
 
+/**
+ * Compact budget label from the parsed job, e.g. "$15–25/hr", "$80 fixed", "Hourly".
+ * Uses `budgetRaw` (original Upwork text) to keep the hourly/fixed distinction; falls
+ * back to the numeric `budget` (fixed-price only).
+ */
+export function formatBudget(job: { budget?: number; budgetRaw?: string }): string | null {
+  const raw = job.budgetRaw?.trim();
+  if (raw) {
+    const hourly = /hour|hr/i.test(raw);
+    const fixed = /fixed/i.test(raw);
+    const nums = raw.match(/\$\s?[\d,]+(?:\.\d+)?/g);
+    if (nums?.length) {
+      const clean = nums.map((n) => n.replace(/\s/g, '').replace(/\.00(?!\d)/, ''));
+      const amount = clean[1] ? `${clean[0]}–${clean[1].replace('$', '')}` : clean[0];
+      if (hourly) return `${amount}/hr`;
+      if (fixed) return `${amount} fixed`;
+      return amount;
+    }
+    if (hourly) return 'Hourly';
+    if (fixed) return 'Fixed price';
+  }
+  if (typeof job.budget === 'number') return `$${job.budget.toLocaleString()}`;
+  return null;
+}
+
+/** Proposals-sent label from the parsed range, e.g. "20–50 proposals", "50+ proposals". */
+export function formatProposals(job: { proposalsMin?: number; proposalsMax?: number }): string | null {
+  const lo = job.proposalsMin;
+  const hi = job.proposalsMax;
+  if (lo === undefined && hi === undefined) return null;
+  let n: string;
+  if (lo !== undefined && hi !== undefined) n = lo === 0 ? `<${hi}` : `${lo}–${hi}`;
+  else if (lo !== undefined) n = `${lo}+`;
+  else n = `<${hi}`;
+  return `${n} proposals`;
+}
+
 /** Friendly "posted ago" label from an ISO timestamp, e.g. "5h ago", "yesterday", "2w ago". */
 export function postedAgo(iso: string | undefined): string | null {
   if (!iso) return null;
