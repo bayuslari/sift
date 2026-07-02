@@ -72,7 +72,16 @@ export async function processJobs(jobs: Job[], deps: PipelineDeps): Promise<Pipe
     scored.push(result);
   }
 
-  const merged = [...scored, ...history].slice(0, HISTORY_CAP);
+  // Backfill postedAt onto existing history when a fresh scrape now provides it
+  // (dedupe means known jobs are never re-scored, so this fills earlier blanks).
+  const incoming = new Map(jobs.map((j) => [j.id, j]));
+  const patched = history.map((h) =>
+    !h.postedAt && incoming.get(h.id)?.postedAt
+      ? { ...h, postedAt: incoming.get(h.id)!.postedAt }
+      : h,
+  );
+
+  const merged = [...scored, ...patched].slice(0, HISTORY_CAP);
   await deps.saveHistory(merged);
 
   return {
