@@ -50,6 +50,27 @@ function readPostedAt(scope: Element | ParentNode): string | undefined {
   return parseRelativeDate(raw ?? undefined);
 }
 
+/**
+ * Fold the type label and any separate fixed-price amount into {budget, budgetRaw}.
+ * Hourly ranges already live in `jobType`; fixed-price amounts arrive separately.
+ */
+function normalizeBudget(
+  jobType: string | undefined,
+  fixedRaw: string | undefined,
+): { budget?: number; budgetRaw?: string } {
+  // Hourly always names itself and carries its range in the label ("Hourly: $54-$92").
+  if (/hour/i.test(jobType ?? '')) return { budgetRaw: jobType };
+  const isFixed = /fixed/i.test(jobType ?? '') || !!fixedRaw;
+  if (isFixed) {
+    const budget = parseMoney(fixedRaw) ?? parseMoney(jobType);
+    return {
+      budget,
+      budgetRaw: budget !== undefined ? `Fixed-price: $${budget.toLocaleString()}` : jobType,
+    };
+  }
+  return { budgetRaw: jobType }; // unknown
+}
+
 function parseList(root: ParentNode): Job[] {
   const jobs: Job[] = [];
   const seen = new Set<string>();
@@ -71,10 +92,15 @@ function parseList(root: ParentNode): Job[] {
       .map(text)
       .filter(Boolean);
 
-    // Budget: search "job-type-label", feed "job-type". Only fixed-price is a real budget.
+    // Budget. Hourly keeps its range in the type label ("Hourly: $15-$25"); fixed-price
+    // puts the amount in a separate node ("Est. Budget: $200"), so read that too.
     const jobType =
       text(tile.querySelector('[data-test="job-type-label"], [data-test="job-type"]')) || undefined;
-    const budget = /fixed/i.test(jobType ?? '') ? parseMoney(jobType) : undefined;
+    const fixedRaw =
+      text(tile.querySelector('[data-test="budget"]')) ||
+      ((tile as HTMLElement).textContent ?? '').match(/(?:est\.?\s*)?budget[:\s]+\$[\d,.]+/i)?.[0] ||
+      undefined;
+    const { budget, budgetRaw } = normalizeBudget(jobType, fixedRaw);
 
     const clientSpend = parseMoney(
       text(tile.querySelector('[data-test="total-spent"], [data-test="client-spendings"]')),
@@ -92,7 +118,7 @@ function parseList(root: ParentNode): Job[] {
       url,
       postedAt: readPostedAt(tile),
       budget,
-      budgetRaw: jobType,
+      budgetRaw,
       clientSpend,
       // hires no longer shown on list/feed tiles -> leave undefined (don't flag as 0)
       tags,
@@ -177,6 +203,10 @@ function parseDetail(root: ParentNode): Job[] {
   const tags = Array.from(root.querySelectorAll('[data-test="token"]')).map(text).filter(Boolean);
   const description = text(root.querySelector('[data-test~="JobDescription"]'));
   const clientSpend = parseMoney(text(root.querySelector('[data-test="total-spent"]')));
+  const jobType =
+    text(root.querySelector('[data-test="job-type-label"], [data-test="job-type"]')) || undefined;
+  const fixedRaw = text(root.querySelector('[data-test="budget"]')) || undefined;
+  const { budget, budgetRaw } = normalizeBudget(jobType, fixedRaw);
 
   return [
     {
@@ -186,6 +216,8 @@ function parseDetail(root: ParentNode): Job[] {
       description,
       url,
       postedAt: readPostedAt(root),
+      budget,
+      budgetRaw,
       clientSpend,
       tags,
       qualifications: parseQualifications(root),

@@ -35,8 +35,13 @@ describe('formatBudget', () => {
     expect(formatBudget({ budget: 1200 })).toBe('$1,200');
   });
 
-  it('returns a bare label when budgetRaw has no amount', () => {
+  it('returns a bare label when budgetRaw has no amount and no numeric budget', () => {
     expect(formatBudget({ budgetRaw: 'Hourly' })).toBe('Hourly');
+  });
+
+  it('uses the numeric budget when the raw text names the type but not the amount', () => {
+    // Fixed-price tiles put the amount in a separate node, so budgetRaw may lack it.
+    expect(formatBudget({ budgetRaw: 'Fixed-price', budget: 200 })).toBe('$200 fixed');
   });
 
   it('returns null when nothing is present', () => {
