@@ -19,6 +19,9 @@ export const demoMatches: ScoredJob[] = [
     description: '',
     url: '#',
     postedAt: new Date(Date.now() - 2 * 3_600_000).toISOString(), // 2h ago
+    budgetRaw: 'Hourly: $45.00 - $65.00',
+    proposalsMin: 5,
+    proposalsMax: 10,
     tags: ['Next.js', 'React', 'fintech'],
     score: 9,
     verdict: 'GOOD',
@@ -38,6 +41,10 @@ export const demoMatches: ScoredJob[] = [
     description: '',
     url: '#',
     postedAt: new Date(Date.now() - 86_400_000).toISOString(), // yesterday
+    budget: 300,
+    budgetRaw: 'Fixed-price: $300.00',
+    proposalsMin: 20,
+    proposalsMax: 50,
     tags: ['Laravel', 'PHP', 'insurance'],
     score: 5,
     verdict: 'MAYBE',
