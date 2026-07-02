@@ -36,9 +36,10 @@ describe('upworkAdapter', () => {
     expect(first.budgetRaw).toMatch(/Hourly/);
   });
 
-  it('parses a fixed-price low-spend second tile', () => {
+  it('parses a fixed-price amount from the separate "Est. Budget" node', () => {
     const [, second] = upworkAdapter.parse(doc);
-    expect(second.budget).toBe(80); // "Fixed-price: $80.00"
+    expect(second.budget).toBe(80); // "Fixed-price" label + "Est. Budget: $80.00" node
+    expect(second.budgetRaw).toMatch(/Fixed-price: \$80/); // amount preserved for the UI
     expect(second.clientSpend).toBe(200);
     expect(second.proposalsMin).toBe(0); // "Less than 5"
     expect(second.proposalsMax).toBe(5);

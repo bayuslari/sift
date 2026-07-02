@@ -28,6 +28,11 @@ export function formatBudget(job: { budget?: number; budgetRaw?: string }): stri
       if (fixed) return `${amount} fixed`;
       return amount;
     }
+    // Type is known but the amount lives elsewhere — use the numeric budget if we have it.
+    if (typeof job.budget === 'number') {
+      const amount = `$${job.budget.toLocaleString()}`;
+      return hourly ? `${amount}/hr` : fixed ? `${amount} fixed` : amount;
+    }
     if (hourly) return 'Hourly';
     if (fixed) return 'Fixed price';
   }
