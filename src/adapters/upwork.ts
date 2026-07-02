@@ -58,6 +58,8 @@ function normalizeBudget(
   jobType: string | undefined,
   fixedRaw: string | undefined,
 ): { budget?: number; budgetRaw?: string } {
+  // Hourly always names itself and carries its range in the label ("Hourly: $54-$92").
+  if (/hour/i.test(jobType ?? '')) return { budgetRaw: jobType };
   const isFixed = /fixed/i.test(jobType ?? '') || !!fixedRaw;
   if (isFixed) {
     const budget = parseMoney(fixedRaw) ?? parseMoney(jobType);
@@ -66,7 +68,7 @@ function normalizeBudget(
       budgetRaw: budget !== undefined ? `Fixed-price: $${budget.toLocaleString()}` : jobType,
     };
   }
-  return { budgetRaw: jobType }; // hourly (range in jobType) or unknown
+  return { budgetRaw: jobType }; // unknown
 }
 
 function parseList(root: ParentNode): Job[] {
@@ -95,7 +97,7 @@ function parseList(root: ParentNode): Job[] {
     const jobType =
       text(tile.querySelector('[data-test="job-type-label"], [data-test="job-type"]')) || undefined;
     const fixedRaw =
-      text(tile.querySelector('[data-test="is-fixed-price"], [data-test="fixed-price-budget"]')) ||
+      text(tile.querySelector('[data-test="budget"]')) ||
       ((tile as HTMLElement).textContent ?? '').match(/(?:est\.?\s*)?budget[:\s]+\$[\d,.]+/i)?.[0] ||
       undefined;
     const { budget, budgetRaw } = normalizeBudget(jobType, fixedRaw);
@@ -203,8 +205,7 @@ function parseDetail(root: ParentNode): Job[] {
   const clientSpend = parseMoney(text(root.querySelector('[data-test="total-spent"]')));
   const jobType =
     text(root.querySelector('[data-test="job-type-label"], [data-test="job-type"]')) || undefined;
-  const fixedRaw =
-    text(root.querySelector('[data-test="is-fixed-price"], [data-test="fixed-price-budget"]')) || undefined;
+  const fixedRaw = text(root.querySelector('[data-test="budget"]')) || undefined;
   const { budget, budgetRaw } = normalizeBudget(jobType, fixedRaw);
 
   return [
